@@ -1,10 +1,14 @@
 # dsh-plugin-yu-comments
 
+[![npm version](https://img.shields.io/npm/v/dsh-plugin-yu-comments.svg)](https://www.npmjs.com/package/dsh-plugin-yu-comments)
+[![license](https://img.shields.io/npm/l/dsh-plugin-yu-comments.svg)](LICENSE)
+
 一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）侧边栏插件：点开鱼形图标，左边是**评论存档**，右边是**个人中心**——人设、记忆、复盘、设置都在一个面板里，不用再开网页。
 
 > A DSH sidebar plugin that renders a comment archive plus a profile panel (persona / memory / review / settings) from a local HTTP service. No build step, no npm dependencies, no network egress beyond `127.0.0.1`.
 
 - **能力分类**：界面与体验
+- **npm**：[`dsh-plugin-yu-comments`](https://www.npmjs.com/package/dsh-plugin-yu-comments)
 - **License**：[MIT](LICENSE)
 - **平台**：DSH 桌面版（`platform: web` 的 client 半边）
 - 侧边栏只有一个入口，面板内两个视图：**评论记录** / **个人中心**
@@ -15,17 +19,24 @@
 
 ## 安装
 
-### 方式一：源码安装（当前未发布 NPM 包，推荐）
+### 方式一：npm（推荐）
+
+```bash
+dsh plugin --profile web add dsh-plugin-yu-comments
+```
+
+装完重启 DSH Host，侧边栏出现鱼形图标。这行命令也可以直接换成 `npm i dsh-plugin-yu-comments` 在 profile 里装。
+
+### 方式二：源码安装（跟仓库最新代码）
 
 ```bash
 dsh plugin --profile web add github:heixiaolv/dsh-plugin-yu-comments
 ```
 
-装完重启 DSH Host，侧边栏出现鱼形图标。
-
-### 方式二：手动注册 profile（改代码免重装）
+### 方式三：手动注册 profile（改代码免重装）
 
 准备：一个 DSH 桌面版 profile（默认在 `~/.dsh/profiles/desktop`），把本仓库放在任意目录。
+
 
 1. 加依赖（`link:` 指向本仓库，改完不用重新安装）：
 
@@ -54,10 +65,11 @@ dsh plugin --profile web add github:heixiaolv/dsh-plugin-yu-comments
 
 ### 装完先看效果
 
-面板需要一个本地记录服务。仓库自带零依赖的合成后端，装完直接跑：
+面板需要一个本地记录服务。仓库/npm 包里自带零依赖的合成后端：
 
 ```bash
-node mock/server.mjs          # 默认 8848
+node mock/server.mjs                                   # 源码安装：在仓库目录跑
+node node_modules/dsh-plugin-yu-comments/mock/server.mjs  # npm 安装：在 profile 目录跑
 ```
 
 面板几秒内自己出数据；不想让它自动拉起服务时，把 `supervise` 设成 `false` 再手动跑 mock。
