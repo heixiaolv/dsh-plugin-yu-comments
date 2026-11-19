@@ -1,0 +1,54 @@
+{
+  "name": "dsh-plugin-yu-comments",
+  "version": "0.1.0",
+  "description": "DSH sidebar plugin: browse comment archives from a local service, plus a profile panel (persona, memory, review, settings).",
+  "repository": { "type": "git", "url": "https://github.com/heixiaolv/dsh-plugin-yu-comments.git" },
+  "homepage": "https://github.com/heixiaolv/dsh-plugin-yu-comments#readme",
+  "type": "module",
+  "license": "MIT",
+  "private": false,
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "docs/API.md",
+    "README.md"
+  ],
+  "scripts": {
+    "mock": "node mock/server.mjs",
+    "check": "node tools/check_panel.mjs --api http://127.0.0.1:8848",
+    "start": "node mock/server.mjs"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "sidebar",
+    "bilibili",
+    "comments",
+    "archive"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  }
+}

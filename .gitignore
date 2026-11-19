@@ -1,0 +1,28 @@
+# node
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# 本地配置与数据（永远不要提交）
+config.json
+config.local.json
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+state.db
+covers/
+logs/
+records.jsonl
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp

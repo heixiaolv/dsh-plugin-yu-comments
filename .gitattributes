@@ -1,0 +1,6 @@
+# 统一用 LF，Windows 上也不要把 .js/.mjs 转成 CRLF
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.svg text

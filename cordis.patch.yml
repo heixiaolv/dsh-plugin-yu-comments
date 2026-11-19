@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=./node_modules/cordis/schema.json
+- insert:
+    - id: yu-comments
+      name: dsh-plugin-yu-comments
+      config:
+        # 本地记录服务端口，必须和面板 API 地址一致（默认 8848）
+        port: 8848
+        # 服务代码目录（含 web.py）；留空则用进程当前目录
+        projectDir: ''
+        # 拉起服务用的解释器；Windows 上用 pythonw 可以不闪黑框
+        python: pythonw
+        # 服务掉线时是否自动拉起
+        supervise: true
+        # 复查间隔（毫秒，下限 5000）
+        intervalMs: 30000

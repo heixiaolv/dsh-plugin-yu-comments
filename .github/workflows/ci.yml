@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 语法检查
+        run: |
+          node --check index.js
+          node --check client.js
+          node --check mock/server.mjs
+          node --check tools/check_panel.mjs
+
+      - name: 起 mock 服务
+        run: |
+          node mock/server.mjs &
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8848/api/state && break
+            sleep 0.5
+          done
+
+      - name: 面板自检
+        run: node tools/check_panel.mjs --api http://127.0.0.1:8848
+
+      - name: package.json 关键字段
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            if (pkg.private) throw new Error('private 必须为 false 才能发布');
+            if (!pkg.exports || !pkg.exports['./client']) throw new Error('缺 exports[./client]');
+            if (!pkg.dsh || !pkg.dsh.client || pkg.dsh.client.platform !== 'web') throw new Error('dsh.client 配置不完整');
+            console.log('package.json ok');
+          "
