@@ -19,60 +19,75 @@
 
 ## 安装
 
-### 方式一：npm（推荐）
+### 前置条件
+
+| 场景 | 需要 |
+|---|---|
+| DSH 桌面版（应用内插件管理器） | 只要 DSH 本体，不需要额外装东西 |
+| 命令行 `dsh plugin …` | Node.js ≥ 18 **+ pnpm**（`dsh plugin` 内部就是调 pnpm）：`npm i -g pnpm` |
+| 面板出数据 | 一个跑在 `127.0.0.1:8848` 的本地记录服务，仓库自带 mock |
+
+> `--profile` 必须和**实际被启动的 profile** 一致：桌面应用加载的是 `desktop`，`dsh web` / 浏览器版加载的是 `web`。装到没人启动的 profile 里，表现就是「装完了但没反应」。
+
+### 方式一：桌面版应用内安装（最省事）
+
+打开 DSH 的插件管理器（插件市场 / 设置里的插件页）→ 安装 → 填包名 `dsh-plugin-yu-comments` → 重启 DSH。
+
+### 方式二：命令行（需要 pnpm）
 
 ```bash
+npm i -g pnpm                                  # 已有 pnpm 可跳过
 dsh plugin --profile web add dsh-plugin-yu-comments
 ```
 
-装完重启 DSH Host，侧边栏出现鱼形图标。这行命令也可以直接换成 `npm i dsh-plugin-yu-comments` 在 profile 里装。
+装完重启 DSH Host，侧边栏出现鱼形图标。
 
-### 方式二：源码安装（跟仓库最新代码）
+### 方式三：手动注册 profile（没有 pnpm / 想跟着仓库改）
+
+改 `~/.dsh/profiles/<你的 profile>/package.json`：
+
+```json
+{
+  "dependencies": { "dsh-plugin-yu-comments": "^0.1.2" },
+  "dsh": { "profile": { "bundles": ["dsh-plugin-yu-comments"] } }
+}
+```
+
+```bash
+cd ~/.dsh/profiles/<你的 profile>
+npm install --no-audit --no-fund
+```
+
+重启 DSH Host。想改代码免重装，就把依赖写成 `"link:/绝对路径/dsh-plugin-yu-comments"`。
+
+### 方式四：源码安装（跟仓库最新代码）
 
 ```bash
 dsh plugin --profile web add github:heixiaolv/dsh-plugin-yu-comments
 ```
 
-### 方式三：手动注册 profile（改代码免重装）
-
-准备：一个 DSH 桌面版 profile（默认在 `~/.dsh/profiles/desktop`），把本仓库放在任意目录。
-
-
-1. 加依赖（`link:` 指向本仓库，改完不用重新安装）：
-
-   ```json
-   // ~/.dsh/profiles/desktop/package.json
-   {
-     "dependencies": {
-       "dsh-plugin-yu-comments": "link:../path/to/dsh-plugin-yu-comments"
-     }
-   }
-   ```
-
-2. 这一行也进 profile 的 `dsh.profile.bundles`：
-
-   ```json
-   { "dsh": { "profile": { "bundles": ["dsh-plugin-yu-comments"] } } }
-   ```
-
-3. 在 profile 目录装一次（建 junction，不下载）：
-
-   ```bash
-   npm install --no-audit --no-fund
-   ```
-
-4. 重启 DSH Host。侧边栏出现鱼形图标；新增 bundle 必须重启一次才生效。
-
 ### 装完先看效果
 
-面板需要一个本地记录服务。仓库/npm 包里自带零依赖的合成后端：
+插件本身装好后，面板还需要一个本地记录服务（默认 `127.0.0.1:8848`）。仓库/npm 包里自带零依赖的合成后端：
 
 ```bash
-node mock/server.mjs                                   # 源码安装：在仓库目录跑
-node node_modules/dsh-plugin-yu-comments/mock/server.mjs  # npm 安装：在 profile 目录跑
+node mock/server.mjs                                      # 源码安装：在仓库目录跑
+node node_modules/dsh-plugin-yu-comments/mock/server.mjs   # npm 包：在 profile 目录跑
 ```
 
 面板几秒内自己出数据；不想让它自动拉起服务时，把 `supervise` 设成 `false` 再手动跑 mock。
+
+## 装不起来 / 启动失败对照表
+
+| 你看到的 | 真正原因 | 怎么办 |
+|---|---|---|
+| `'pnpm' is not recognized as an internal or external command` + `Command failed with exit code 1: pnpm add dsh-plugin-yu-comments` | `dsh plugin` 需要 pnpm，machine 上没有，**插件根本没装上** | `npm i -g pnpm` 后重试；或改用「方式一 / 方式三」 |
+| `dsh: profile "xxx" does not exist` | `--profile` 名字写错 | 换成实际存在且会被启动的 profile（桌面版通常 `desktop`，浏览器版 `web`） |
+| 命令成功、侧边栏却没有鱼形图标 | 装进了不会被启动的 profile，或没重启 Host | 检查 profile 对不对；完整重启 DSH |
+| `dsh: skipping profile bundle "dsh-plugin-yu-comments": …` | 包没解析到 / 版本要求不满足 | 在 profile 目录重跑安装（`dsh plugin --profile X install`），或删掉重装 |
+| 面板里写着「连不上本地记录服务」 | 插件**没坏**，是数据服务没跑 | 跑上面的 mock，或按 [docs/API.md](docs/API.md) 起自己的服务 |
+| 面板一直转圈 | 服务在跑但接口字段不对 | 用 `curl 127.0.0.1:8848/api/state` 对照 docs/API.md 检查 |
+| 白屏 / 控制台报找不到 `@deepseek-ai/dsh-client-ui-layout` | DSH 版本太旧，没有这个 client 包 | 升级 DSH，或在 issue 里附上 `dsh --version` |
 
 ## 目录
 
@@ -127,7 +142,7 @@ localStorage.setItem('yu-comments.api', 'http://127.0.0.1:9000');
 
 **自动拉起的三层**（按需取舍）：
 
-1. 插件 Host 半边：激活时探测 `/api/state`，连不上就 `spawn <python> <projectDir>/web.py --port <port>`，之后每 30 秒复查，插件释放时结束自己拉起的子进程
+1. 插件 Host 半边：激活时探测 `/api/state`，连不上就 `spawn <python> <projectDir>/web.py --port <port>`，之后每 30 秒复查；**找不到 `web.py` 时只提示一次就停手**（不会再刷日志），插件释放时结束自己拉起的子进程
 2. 系统开机自启：把启动命令做成快捷方式丢进启动目录（Windows：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`）
 3. 手动：任何把服务跑在 `127.0.0.1:<port>` 的方式都行，包括 `node mock/server.mjs`
 

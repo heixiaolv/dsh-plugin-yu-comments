@@ -73,11 +73,15 @@ export function apply(ctx, config = {}) {
   let stopped = false;
   let lastSpawnAt = 0;
   let spawnFailures = 0;
+  // 找不到服务脚本时只提示一次，然后彻底停手：否则每 30 秒刷一行日志，
+  // 看起来像「插件启动失败」，其实只是本地记录服务没装。
+  let superviseOff = false;
 
   function spawnService() {
     const script = path.join(projectDir, String(cfg.entry || DEFAULT_ENTRY));
     if (!existsSync(script)) {
-      log('找不到 ' + script + '，无法自动启动服务（改 projectDir/entry，或关掉 supervise）');
+      superviseOff = true;
+      log('没找到 ' + script + '，自动拉起已停止；面板会显示离线，跑 `node mock/server.mjs` 或按 docs/API.md 起服务即可');
       return false;
     }
     const python = existsSync(String(cfg.python)) ? String(cfg.python) : 'pythonw';
@@ -110,7 +114,7 @@ export function apply(ctx, config = {}) {
   }
 
   async function tick(first) {
-    if (stopped) return;
+    if (stopped || superviseOff) return;
     if (await probe(base)) {
       spawnFailures = 0;
       return;
@@ -122,13 +126,19 @@ export function apply(ctx, config = {}) {
   }
 
   ctx.effect(() => {
-    tick(true);
-    timer = setInterval(
-      () => {
-        tick(false);
-      },
-      Math.max(5000, Number(cfg.intervalMs) || DEFAULTS.intervalMs),
-    );
+    // 这个半边只负责「顺手把本地服务拉起来」。它出任何问题都不该拖累 DSH 启动，
+    // 所以这里兜住所有异常：插件面板顶多是离线状态，宿主照常起来。
+    try {
+      tick(true);
+      timer = setInterval(
+        () => {
+          tick(false);
+        },
+        Math.max(5000, Number(cfg.intervalMs) || DEFAULTS.intervalMs),
+      );
+    } catch (error) {
+      log('自动拉起初始化失败（不影响面板加载）：' + (error && error.message ? error.message : String(error)));
+    }
     return () => {
       stopped = true;
       if (timer) clearInterval(timer);

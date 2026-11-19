@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-yu-comments",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "DSH sidebar plugin: browse comment archives from a local service, plus a profile panel (persona, memory, review, settings).",
   "repository": {
     "type": "git",
@@ -13,8 +13,10 @@
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg"
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
   },
   "files": [
     "index.js",
